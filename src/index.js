@@ -3,6 +3,9 @@ const prettyBytes = require('pretty-bytes')
 const choo = require('choo')
 const html = require('choo/html')
 const log = require('choo-log')
+const css = require('sheetify')
+
+css('./style.css')
 
 const app = choo()
 app.use(log())
