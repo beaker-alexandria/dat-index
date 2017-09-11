@@ -64,7 +64,7 @@ function elementView (link, emit) {
         <a href="#" onclick="${expand}">${link.title}</a>
       </div>
       <div class="col-tenth">
-        ${prettyBytes(link.size)} in ${link.files.length} files
+        ${prettyBytes(link.size)} in ${link.files.length} files (${link.peers} peers)
       </div>
       <div class="col-fifth">
         <a href="${link.url}" target="_blank">directory icon</a>
