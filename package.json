@@ -10,7 +10,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "microbounce": "^1.0.0"
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "watchify": "^3.9.0"
   }
 }

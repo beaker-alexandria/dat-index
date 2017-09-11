@@ -1,26 +1,16 @@
-const Microbounce = require('microbounce')
-const bounce = Microbounce()
-const listInput = document.createElement('input');
-listInput.setAttribute('type', 'text')
-
+const index = require('../config.json')[0] //for now take the first one
 let links
 
 async function main () {
-  listInput.onkeydown = async function onKeyDown() {
-    bounce(async function() {
-      const container = document.getElementById('container')
-      const archive = new DatArchive(listInput.value)
-      let list = await archive.readFile('/list.json')
+    const container = document.getElementById('container')
+    const archive = new DatArchive(index)
+    let list = await archive.readFile('/list.json')
 
-      try {
-        list = JSON.parse(list)
-        links = list.links
-        await render()
-      } catch(e) {}
-    })
-  }
-
-  document.body.appendChild(listInput)
+    try {
+      list = JSON.parse(list)
+      links = list.links
+      await render()
+    } catch(e) {}
 }
 
 async function render () {
