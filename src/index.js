@@ -84,7 +84,7 @@ function elementView (link, emit) {
                 html`<a href="/video/${link.url}/${file.uri}">video icon</a>`
                 :
                 file.type.startsWith('audio') ?
-                html`<a href="/audio/${link.url}/${file.uri}">video icon</a>`
+                html`<a href="/audio/${link.url}/${file.uri}">audio icon</a>`
                 :
                 html`<a href="${link.url}/${file.uri}">download icon</a>`
               }
@@ -122,7 +122,7 @@ function videoView(state, emit) {
   `
 }
 
-function audioView() {
+function audioView(state, emit) {
   return html`
   <div id="app">
     <audio src="${state.params.wildcard}" controls></audio>
