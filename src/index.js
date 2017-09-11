@@ -28,7 +28,7 @@ async function loadList(state, emitter) {
     const files = await liArchive.readdir('/')
     const info = await liArchive.getInfo()
 
-    state.links[i] = Object.assign(info, {files: files.map((e) => {
+    state.links[i] = Object.assign(info, {files: files.filter((file) => file !== 'dat.json').map((e) => {
       return {
         name: e,
         uri: encodeURIComponent(e),
@@ -73,7 +73,7 @@ function elementView (link, emit) {
     ${!link.expanded ? '' : html`
     <div class="row">
       <div class="col">
-      ${link.files.filter((file) => file.name !== 'dat.json').map((file) => {
+      ${link.files.map((file) => {
         return html`
           <div class="row">
             <div class="col-half">
