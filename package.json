@@ -13,6 +13,8 @@
   "dependencies": {
     "choo": "^6.0.0",
     "choo-log": "^7.2.1",
+    "date-fns": "^2.0.0-alpha.2",
+    "mime": "^1.4.0",
     "pretty-bytes": "^4.0.2",
     "sheetify": "^6.1.1"
   },
