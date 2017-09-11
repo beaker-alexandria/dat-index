@@ -1,0 +1,16 @@
+{
+  "name": "dat-index",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify src/index.js -o js/index.js",
+    "watch": "watchify src/index.js -o js/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "microbounce": "^1.0.0"
+  }
+}
