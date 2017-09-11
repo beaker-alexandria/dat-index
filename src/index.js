@@ -1,37 +1,71 @@
 const index = require('../config.json')[0] //for now take the first one
-let links
+const prettyBytes = require('pretty-bytes')
+const choo = require('choo')
+const html = require('choo/html')
+const log = require('choo-log')
 
-async function main () {
-    const container = document.getElementById('container')
-    const archive = new DatArchive(index)
-    let list = await archive.readFile('/list.json')
+const app = choo()
+app.use(log())
+app.use(linksStore)
+app.route('/', listView)
+app.mount('#app')
 
-    try {
-      list = JSON.parse(list)
-      links = list.links
-      await render()
-    } catch(e) {}
-}
+async function loadList(state, emitter) {
+  const archive = new DatArchive(index)
+  list = await archive.readFile('/list.json')
+  list = JSON.parse(list)
+  state.links = list.links
 
-async function render () {
-  const fragment = document.createDocumentFragment()
-
-  while (container.firstChild) {
-    container.removeChild(container.firstChild)
-  }
-
-  for (let i = 0; i < links.length; i++) {
-    const link = links[i]
-    const li = document.createElement('li')
-    const liArchive = new DatArchive(link)
+  for (let i = 0; i < state.links.length; i++) {
+    const liArchive = new DatArchive(state.links[i])
     const files = await liArchive.readdir('/')
+    const info = await liArchive.getInfo()
 
-    li.innerHTML = `<a href="dat://${link}">${link} (${files.length} files)</a>`
-
-    fragment.appendChild(li)
+    state.links[i] = Object.assign(info, {files: files, expanded: false})
   }
 
-  container.appendChild(fragment)
+  emitter.emit('render')
 }
 
-main()
+function linksStore (state, emitter) {
+  if (!state.links) {
+    state.links = []
+  }
+
+  emitter.on('DOMContentLoaded', function onDOMContentLoaded () {
+    loadList(state, emitter)
+  })
+}
+
+function elementView (link, emit) {
+  return html`<li onclick="${expand}">
+    ${link.title} (${link.files.length} files ${prettyBytes(link.size)}) - ${new Date(link.mtime)} <a href="${link.url}" target="_blank">Open</a>
+  </li>`
+
+  function expand() {
+    link.expanded = true
+    emit('render')
+  }
+}
+
+function expandedElementView (link, emit) {
+  return html`<li onclick="${expand}">
+    ${link.title} (${link.files.length} files ${prettyBytes(link.size)}) - ${new Date(link.mtime)}
+    <ul>
+      ${link.files.filter((file) => file !== 'dat.json').map((file) => {
+        return html`<li><a href="${link.url}/${file}">${file}</a></li>`
+      })}
+    </ul>
+  </li>`
+
+  function expand() {
+    link.expanded = false
+    emit('render')
+  }
+}
+
+function listView (state, emit) {
+  return html`<div id="app"><ul>${state.links.map((link) => {
+    return link.expanded ? expandedElementView(link, emit) : elementView(link, emit)
+  })}</ul></div>`
+}

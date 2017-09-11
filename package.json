@@ -4,15 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "browserify src/index.js -o js/index.js",
-    "watch": "watchify src/index.js -o js/index.js"
+    "build": "browserify src/index.js -g yo-yoify -o js/index.js",
+    "watch": "watchify src/index.js -g yo-yoify -o js/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "choo": "^6.0.0",
+    "choo-log": "^7.2.1",
+    "pretty-bytes": "^4.0.2"
+  },
   "devDependencies": {
     "browserify": "^14.4.0",
-    "watchify": "^3.9.0"
+    "watchify": "^3.9.0",
+    "yo-yoify": "^3.7.3"
   }
 }
