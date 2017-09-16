@@ -6,6 +6,7 @@ const html = require('choo/html')
 const log = require('choo-log')
 const css = require('sheetify')
 const formatDistance = require('date-fns/formatDistance')
+const Release = require('scene-release-parser')
 
 css('./style.css')
 
@@ -28,13 +29,19 @@ async function loadList(state, emitter) {
     const files = await liArchive.readdir('/')
     const info = await liArchive.getInfo()
 
-    state.links[i] = Object.assign(info, {files: files.filter((file) => file !== 'dat.json').map((e) => {
-      return {
-        name: e,
-        uri: encodeURIComponent(e),
-        type: mime.lookup(e)
-      }
-    }), expanded: false})
+    //enc, source, langue, group
+    state.links[i] = Object.assign(info, {
+      files: files.filter((file) => file !== 'dat.json').map((e) => {
+        return {
+          name: e,
+          uri: encodeURIComponent(e),
+          type: mime.lookup(e)
+        }
+      }),
+      expanded: false,
+      release: new Release(info.title || '', false)
+    })
+
   }
 
   emitter.emit('render')
@@ -58,7 +65,10 @@ function elementView (link, emit) {
         ${formatDistance(link.mtime ? new Date(link.mtime) : new Date(), new Date())}
       </div>
       <div class="col-tenth">
-        Tag
+        ${link.release.source}
+        ${link.release.encoding}
+        ${link.release.lang}
+        ${link.release.group}
       </div>
       <div class="col-half">
         <a href="#" onclick="${expand}">${link.title}</a>
