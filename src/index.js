@@ -22,15 +22,29 @@ async function loadList(state, emitter) {
   const archive = new DatArchive(index)
   list = await archive.readFile('/list.json')
   list = JSON.parse(list)
-  state.links = list.links
+  state.links = list.links.reverse()
+  state.total = state.links.length
 
-  for (let i = 0; i < state.links.length; i++) {
-    const liArchive = new DatArchive(state.links[i])
+  for (let i = 0; i < state.total; i++) {
+    state.links[i] = {loaded: false, link: state.links[i]}
+  }
+
+}
+
+async function buildList(state, emitter) {
+  let end = state.parse.end
+  if (state.total < end) {
+    end = state.total
+  }
+
+  for (let i = state.parse.start; i < end; i++) {
+    const item = state.links[i]
+    const liArchive = new DatArchive(item.link)
     const files = await liArchive.readdir('/')
     const info = await liArchive.getInfo()
 
     //enc, source, langue, group
-    state.links[i] = Object.assign(info, {
+    Object.assign(state.links[i], info, {
       files: files.filter((file) => file !== 'dat.json').map((e) => {
         return {
           name: e,
@@ -39,12 +53,24 @@ async function loadList(state, emitter) {
         }
       }),
       expanded: false,
+      loaded: true,
       release: new Release(info.title || '', false)
     })
 
+    state.parsed++
+  }
+}
+
+async function parseInterval(state, emitter) {
+  if (state.parsed >= state.total) {
+    return
   }
 
-  emitter.emit('render')
+  state.parse.start += state.batch
+  state.parse.end += state.batch
+
+  await buildList(state, emitter)
+  setTimeout(() => parseInterval(state, emitter), state.interval)
 }
 
 function linksStore (state, emitter) {
@@ -52,8 +78,23 @@ function linksStore (state, emitter) {
     state.links = []
   }
 
-  emitter.on('DOMContentLoaded', function onDOMContentLoaded () {
-    loadList(state, emitter)
+  state.batch = 100
+
+  // visual
+  state.start = 0
+  state.end = state.batch
+
+  state.parsed = 0
+  state.interval = 100
+
+  state.parse = {start: 0, end: state.batch}
+
+  emitter.on('DOMContentLoaded', async function onDOMContentLoaded () {
+    await loadList(state, emitter)
+    await buildList(state, emitter)
+    emitter.emit('render')
+
+    setTimeout(() => parseInterval(state, emitter), state.interval)
   })
 }
 
@@ -117,7 +158,9 @@ function elementView (link, emit) {
 function listView (state, emit) {
   return html`
   <div id="app">
-    ${state.links.map((link) => {
+    ${state.links.filter((e, i) => {
+      return i >= state.start && i < state.end
+    }).map((link) => {
       return elementView(link, emit)
     })}
   </div>`
